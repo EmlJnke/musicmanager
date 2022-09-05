@@ -1,12 +1,8 @@
-import requests as requests
-from flask import Flask, render_template, request, redirect, make_response
-from config import Config
+import requests
+from flask import render_template, request, redirect, make_response
+from app import app
 import urllib
 import uuid
-
-app = Flask(__name__)
-
-app.config.from_object(Config)
 
 
 @app.route('/')
@@ -37,7 +33,8 @@ def spotify_login():
 def callback():
     code = request.args.get('code')
     credentials = get_access_token(authorization_code=code)
-
+    refresh_token = credentials['refresh_token']
+    print(refresh_token)
     response = make_response(redirect("/"))
     response.set_cookie('token', credentials['access_token'])
 
@@ -45,7 +42,7 @@ def callback():
 
 
 def get_access_token(authorization_code: str):
-    spotify_request_access_token_url = 'https://accounts.spotify.com/api/token/?'
+    spotify_request_access_token_url = 'https://accounts.spotify.com/api/token/'
     body = {'grant_type': 'authorization_code',
             'code': authorization_code,
             'client_id': app.config['CLIENT_ID'],
@@ -94,7 +91,3 @@ def navbar():
     response.set_cookie('token', expires=0)
 
     return response
-
-
-if __name__ == '__main__':
-    app.run(debug=True)
